@@ -5,10 +5,9 @@ import { McpApprovalCard } from "./chat/McpApprovalCard";
 import { StarterMessages } from "./chat/StarterMessages";
 import { ChatInput } from "./chat/ChatInput";
 import { DropZone } from "./chat/DropZone";
-import { Waves } from "./animations/Waves";
 import { ErrorMessage } from "./core/ErrorMessage";
 import { KeyboardShortcuts } from "./core/KeyboardShortcuts";
-import { BuiltWithBadge } from "./core/BuiltWithBadge";
+import { AppHeader } from "./core/AppHeader";
 import type { IChatItem } from "../types/chat";
 import type { AppState } from "../types/appState";
 import type { AppError } from "../types/errors";
@@ -175,6 +174,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = (props) => {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
+      <AppHeader
+        agentName={agentName}
+        hasMessages={hasMessages}
+        disabled={isBusy}
+        onToggleSidebar={onToggleSidebar}
+        onNewChat={onNewChat}
+        onExportConversation={onExportConversation}
+        onShowShortcuts={handleShowShortcuts}
+        onOpenSettings={onOpenSettings}
+      />
       <DropZone visible={isDragging} />
       <KeyboardShortcuts open={isShortcutsOpen} onOpenChange={setIsShortcutsOpen} />
       {/* Live region for announcing streaming status to screen readers */}
@@ -295,21 +304,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = (props) => {
           </div>
         )}
 
-        <Waves />
         <ChatInput
           onSubmit={handleSendMessage}
           disabled={isBusy}
-          onOpenSettings={onOpenSettings}
-          onNewChat={onNewChat}
-          onToggleSidebar={onToggleSidebar}
           hasMessages={hasMessages}
-          placeholder="Type your message here..."
+          placeholder={agentName ? `Ask ${agentName}` : "Ask a question"}
           isStreaming={isStreaming}
           onCancelStream={isStreaming && onCancelStream ? onCancelStream : undefined}
           isEditing={isEditing}
           onCancelEdit={onCancelEdit}
-          onExportConversation={onExportConversation}
-          onShowShortcuts={handleShowShortcuts}
           recoveredInput={recoveredInput}
           recoveredAttachments={recoveredAttachments}
           onRecoveredInputConsumed={onRecoveredInputConsumed}
@@ -318,7 +321,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = (props) => {
           droppedFiles={droppedFiles}
           onDroppedFilesConsumed={handleDroppedFilesConsumed}
         />
-        <BuiltWithBadge className={styles.builtWithBadge} />
       </div>
     </div>
   );

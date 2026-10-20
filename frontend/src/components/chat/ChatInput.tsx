@@ -401,6 +401,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 aria-label="New chat"
               />
             )}
+            {(onToggleSidebar || onExportConversation || onShowShortcuts || onOpenSettings) && (
             <Menu>
               <MenuTrigger disableButtonEnhancement>
                 <Button
@@ -434,6 +435,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 </MenuList>
               </MenuPopover>
             </Menu>
+            )}
           </div>
         </div>
       </div>

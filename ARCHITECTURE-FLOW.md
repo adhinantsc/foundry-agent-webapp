@@ -6,10 +6,10 @@ State transitions and data flow diagrams for the foundry-agent-webapp applicatio
 
 The app has two distinct state domains:
 
-| Domain | Location | Pattern |
-|--------|----------|---------|
-| **Frontend** | React (AppContext) | useReducer with discriminated actions |
-| **Backend** | ASP.NET Core | Stateless request handling + lazy-cached agent |
+| Domain             | Location           | Pattern                                        |
+| ------------------ | ------------------ | ---------------------------------------------- |
+| **Frontend** | React (AppContext) | useReducer with discriminated actions          |
+| **Backend**  | ASP.NET Core       | Stateless request handling + lazy-cached agent |
 
 ---
 
@@ -164,24 +164,25 @@ sequenceDiagram
 
 ### 1.5 Backend SSE Event Types
 
-| Event Type | When Sent | Payload |
-|------------|-----------|---------|
-| `conversationId` | First, always | `{conversationId: string}` |
-| `chunk` | Per text delta | `{content: string}` |
-| `annotations` | After item complete | `{annotations: AnnotationInfo[]}` — each annotation may include `containerId` for container file citations |
-| `mcpApprovalRequest` | MCP tool needs approval | `{approvalRequest: {...}}` |
-| `toolUse` | When agent starts using a tool | `{toolName: string}` |
-| `usage` | Before done | `{duration, promptTokens, completionTokens, totalTokens}` |
-| `done` | Last, always | `{}` |
-| `error` | On exception | `{message: string}` |
+| Event Type             | When Sent                      | Payload                                                                                                         |
+| ---------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `conversationId`     | First, always                  | `{conversationId: string}`                                                                                    |
+| `chunk`              | Per text delta                 | `{content: string}`                                                                                           |
+| `annotations`        | After item complete            | `{annotations: AnnotationInfo[]}` — each annotation may include `containerId` for container file citations |
+| `mcpApprovalRequest` | MCP tool needs approval        | `{approvalRequest: {...}}`                                                                                    |
+| `toolUse`            | When agent starts using a tool | `{toolName: string}`                                                                                          |
+| `usage`              | Before done                    | `{duration, promptTokens, completionTokens, totalTokens}`                                                     |
+| `done`               | Last, always                   | `{}`                                                                                                          |
+| `error`              | On exception                   | `{message: string}`                                                                                           |
 
 ---
 
 ## Part 2: Frontend State
 
 The frontend manages three state domains:
+
 - **Auth State**: User authentication lifecycle
-- **Chat State**: Message and streaming lifecycle  
+- **Chat State**: Message and streaming lifecycle
 - **UI State**: Input enablement (derived from chat state)
 
 ### 2.1 Authentication State Machine
@@ -202,12 +203,12 @@ stateDiagram-v2
 
 ### Auth States
 
-| State | Description | User Object |
-|-------|-------------|-------------|
-| `initializing` | App startup, checking MSAL cache | `null` |
-| `authenticated` | Valid session, user info available | `AccountInfo` |
-| `unauthenticated` | No session, login required | `null` |
-| `error` | Auth failure (rare) | `null` |
+| State               | Description                        | User Object     |
+| ------------------- | ---------------------------------- | --------------- |
+| `initializing`    | App startup, checking MSAL cache   | `null`        |
+| `authenticated`   | Valid session, user info available | `AccountInfo` |
+| `unauthenticated` | No session, login required         | `null`        |
+| `error`           | Auth failure (rare)                | `null`        |
 
 ---
 
@@ -218,7 +219,7 @@ stateDiagram-v2
     [*] --> idle
 
     idle --> sending: CHAT_SEND_MESSAGE
-    
+  
     sending --> streaming: CHAT_START_STREAM
     sending --> error: CHAT_ERROR
 
@@ -240,12 +241,12 @@ stateDiagram-v2
 
 ### Chat States
 
-| State | Description | Input Enabled | streamingMessageId |
-|-------|-------------|---------------|-------------------|
-| `idle` | Ready for input | ✅ Yes (except during MCP approval) | `undefined` |
-| `sending` | Request in flight | ❌ No | `undefined` |
-| `streaming` | Receiving chunks (or retrying) | ✅ Yes (messages queue) | Message ID |
-| `error` | Failure occurred | If recoverable | `undefined` |
+| State         | Description                    | Input Enabled                       | streamingMessageId |
+| ------------- | ------------------------------ | ----------------------------------- | ------------------ |
+| `idle`      | Ready for input                | ✅ Yes (except during MCP approval) | `undefined`      |
+| `sending`   | Request in flight              | ❌ No                               | `undefined`      |
+| `streaming` | Receiving chunks (or retrying) | ✅ Yes (messages queue)             | Message ID         |
+| `error`     | Failure occurred               | If recoverable                      | `undefined`      |
 
 ### Message Queue
 
@@ -254,6 +255,7 @@ When the AI is streaming, the input stays enabled. Messages sent during streamin
 ### Message Actions
 
 Assistant messages display a hover action bar with Copy, Regenerate, and Feedback (👍👎) buttons. User messages show an Edit button on the last message.
+
 - **Regenerate**: Removes the last assistant response and auto-resends the user's message
 - **Edit**: Removes the target message and everything after it, then auto-resends with the edited text
 - **Feedback**: Tracks 👍👎 ratings to Application Insights via `trackEvent`
@@ -347,7 +349,7 @@ stateDiagram-v2
     [*] --> streaming: Normal streaming
 
     streaming --> awaiting_approval: CHAT_MCP_APPROVAL_REQUEST
-    
+  
     state awaiting_approval {
         [*] --> show_card: Display approval UI
         show_card --> user_decides: User sees tool request
@@ -355,7 +357,7 @@ stateDiagram-v2
 
     awaiting_approval --> sending: User approves
     awaiting_approval --> idle: User denies
-    
+  
     sending --> streaming: Resume with approval response
 
     note right of awaiting_approval
@@ -438,55 +440,55 @@ flowchart LR
 
 ### 2.7 Action Reference
 
-| Action | From State(s) | To State | Side Effects |
-|--------|--------------|----------|--------------|
-| `AUTH_INITIALIZED` | initializing, unauthenticated | authenticated | Set user object |
-| `AUTH_TOKEN_EXPIRED` | authenticated | unauthenticated | Clear user |
-| `CHAT_SEND_MESSAGE` | idle | sending | Append user message |
-| `CHAT_ADD_ASSISTANT_MESSAGE` | sending | sending | Create empty assistant msg |
-| `CHAT_START_STREAM` | sending | streaming | Set conversationId, messageId |
-| `CHAT_STREAM_CHUNK` | streaming | streaming | Append content to msg |
-| `CHAT_STREAM_ANNOTATIONS` | streaming | streaming | Add citations to msg |
-| `CHAT_MCP_APPROVAL_REQUEST` | streaming | idle | Add approval message, keep input disabled |
-| `CHAT_MCP_APPROVAL_RESOLVED` | idle | idle | Mark approval as approved/rejected |
-| `CHAT_STREAM_COMPLETE` | streaming | idle | Add usage, enable input |
-| `CHAT_CANCEL_STREAM` | streaming | idle | Enable input |
-| `CHAT_STREAM_RETRY` | streaming | streaming | Reset assistant msg content, show retry indicator |
-| `CHAT_RECOVER_MESSAGE` | streaming | error | Remove failed msgs, restore input text, show error |
-| `CHAT_REGENERATE` | idle | idle | Remove last assistant msg, store user text as regenerateText |
-| `CHAT_EDIT_MESSAGE` | idle | idle | Remove target msg + after, store new text as regenerateText |
-| `CHAT_CONSUMED_REGENERATE` | any | (unchanged) | Clear regenerateText after auto-send |
-| `CHAT_STREAM_TOOL_USE` | streaming | streaming | Set activeToolUse on streaming message |
-| `CHAT_CONSUMED_RECOVERED_INPUT` | any | (unchanged) | Clear recoveredInput after input pre-fill |
-| `CHAT_QUEUE_MESSAGE` | any | (unchanged) | Append text to pendingMessages |
-| `CHAT_DEQUEUE_MESSAGE` | any | (unchanged) | Remove message at index from pendingMessages |
-| `CHAT_CLEAR_QUEUE` | any | (unchanged) | Clear pendingMessages array |
-| `CHAT_ERROR` | any | error | Set error, conditional input |
-| `CHAT_CLEAR_ERROR` | error | idle | Clear error + recoveredInput, enable input |
-| `CHAT_CLEAR` | any | idle | Reset all chat state |
-| `CHAT_LOAD_CONVERSATION` | any | idle | Replace messages, set conversationId, clear pendingMessages |
-| `CHAT_LOAD_MESSAGES` | any | (unchanged) | Append historical messages without changing status |
-| `CONVERSATIONS_LOADING` | any | (loading) | Set conversations loading state |
-| `CONVERSATIONS_SET_LIST` | any | (list updated) | Populate conversation list |
-| `CONVERSATIONS_TOGGLE_SIDEBAR` | any | (sidebar toggled) | Open/close conversation sidebar |
-| `CONVERSATIONS_REMOVE` | any | (list updated) | Remove conversation from list |
-| `CHAT_LOAD_MESSAGES` | any | (unchanged) | Append historical messages without changing status |
-| `CONVERSATIONS_LOADING_DONE` | any | (loading cleared) | Reset isLoading without clearing data |
+| Action                            | From State(s)                 | To State          | Side Effects                                                 |
+| --------------------------------- | ----------------------------- | ----------------- | ------------------------------------------------------------ |
+| `AUTH_INITIALIZED`              | initializing, unauthenticated | authenticated     | Set user object                                              |
+| `AUTH_TOKEN_EXPIRED`            | authenticated                 | unauthenticated   | Clear user                                                   |
+| `CHAT_SEND_MESSAGE`             | idle                          | sending           | Append user message                                          |
+| `CHAT_ADD_ASSISTANT_MESSAGE`    | sending                       | sending           | Create empty assistant msg                                   |
+| `CHAT_START_STREAM`             | sending                       | streaming         | Set conversationId, messageId                                |
+| `CHAT_STREAM_CHUNK`             | streaming                     | streaming         | Append content to msg                                        |
+| `CHAT_STREAM_ANNOTATIONS`       | streaming                     | streaming         | Add citations to msg                                         |
+| `CHAT_MCP_APPROVAL_REQUEST`     | streaming                     | idle              | Add approval message, keep input disabled                    |
+| `CHAT_MCP_APPROVAL_RESOLVED`    | idle                          | idle              | Mark approval as approved/rejected                           |
+| `CHAT_STREAM_COMPLETE`          | streaming                     | idle              | Add usage, enable input                                      |
+| `CHAT_CANCEL_STREAM`            | streaming                     | idle              | Enable input                                                 |
+| `CHAT_STREAM_RETRY`             | streaming                     | streaming         | Reset assistant msg content, show retry indicator            |
+| `CHAT_RECOVER_MESSAGE`          | streaming                     | error             | Remove failed msgs, restore input text, show error           |
+| `CHAT_REGENERATE`               | idle                          | idle              | Remove last assistant msg, store user text as regenerateText |
+| `CHAT_EDIT_MESSAGE`             | idle                          | idle              | Remove target msg + after, store new text as regenerateText  |
+| `CHAT_CONSUMED_REGENERATE`      | any                           | (unchanged)       | Clear regenerateText after auto-send                         |
+| `CHAT_STREAM_TOOL_USE`          | streaming                     | streaming         | Set activeToolUse on streaming message                       |
+| `CHAT_CONSUMED_RECOVERED_INPUT` | any                           | (unchanged)       | Clear recoveredInput after input pre-fill                    |
+| `CHAT_QUEUE_MESSAGE`            | any                           | (unchanged)       | Append text to pendingMessages                               |
+| `CHAT_DEQUEUE_MESSAGE`          | any                           | (unchanged)       | Remove message at index from pendingMessages                 |
+| `CHAT_CLEAR_QUEUE`              | any                           | (unchanged)       | Clear pendingMessages array                                  |
+| `CHAT_ERROR`                    | any                           | error             | Set error, conditional input                                 |
+| `CHAT_CLEAR_ERROR`              | error                         | idle              | Clear error + recoveredInput, enable input                   |
+| `CHAT_CLEAR`                    | any                           | idle              | Reset all chat state                                         |
+| `CHAT_LOAD_CONVERSATION`        | any                           | idle              | Replace messages, set conversationId, clear pendingMessages  |
+| `CHAT_LOAD_MESSAGES`            | any                           | (unchanged)       | Append historical messages without changing status           |
+| `CONVERSATIONS_LOADING`         | any                           | (loading)         | Set conversations loading state                              |
+| `CONVERSATIONS_SET_LIST`        | any                           | (list updated)    | Populate conversation list                                   |
+| `CONVERSATIONS_TOGGLE_SIDEBAR`  | any                           | (sidebar toggled) | Open/close conversation sidebar                              |
+| `CONVERSATIONS_REMOVE`          | any                           | (list updated)    | Remove conversation from list                                |
+| `CHAT_LOAD_MESSAGES`            | any                           | (unchanged)       | Append historical messages without changing status           |
+| `CONVERSATIONS_LOADING_DONE`    | any                           | (loading cleared) | Reset isLoading without clearing data                        |
 
 ### 2.8 SSE Event → Action Mapping
 
 The `ChatService` translates backend SSE events into reducer actions:
 
-| SSE Event | Action Dispatched | Payload Transformation |
-|-----------|-------------------|----------------------|
-| `conversationId` | `CHAT_START_STREAM` | Extract `conversationId` from event |
-| `chunk` | `CHAT_STREAM_CHUNK` | Extract `content` field |
-| `annotations` | `CHAT_STREAM_ANNOTATIONS` | Map `AnnotationInfo[]` to `IAnnotation[]` |
-| `mcpApprovalRequest` | `CHAT_MCP_APPROVAL_REQUEST` | Create approval message with `role: 'approval'` |
-| `usage` | `CHAT_STREAM_COMPLETE` | Extract token counts and duration |
-| `done` | No action — exits stream reader | `usage` is the sole trigger for CHAT_STREAM_COMPLETE |
-| `toolUse` | `CHAT_STREAM_TOOL_USE` | `{toolName}` → `{messageId, toolName}` |
-| `error` | `CHAT_ERROR` | Wrap message in `AppError` object |
+| SSE Event              | Action Dispatched                | Payload Transformation                                 |
+| ---------------------- | -------------------------------- | ------------------------------------------------------ |
+| `conversationId`     | `CHAT_START_STREAM`            | Extract`conversationId` from event                   |
+| `chunk`              | `CHAT_STREAM_CHUNK`            | Extract`content` field                               |
+| `annotations`        | `CHAT_STREAM_ANNOTATIONS`      | Map`AnnotationInfo[]` to `IAnnotation[]`           |
+| `mcpApprovalRequest` | `CHAT_MCP_APPROVAL_REQUEST`    | Create approval message with`role: 'approval'`       |
+| `usage`              | `CHAT_STREAM_COMPLETE`         | Extract token counts and duration                      |
+| `done`               | No action — exits stream reader | `usage` is the sole trigger for CHAT_STREAM_COMPLETE |
+| `toolUse`            | `CHAT_STREAM_TOOL_USE`         | `{toolName}` → `{messageId, toolName}`            |
+| `error`              | `CHAT_ERROR`                   | Wrap message in`AppError` object                     |
 
 ### Performance Optimizations
 
@@ -588,20 +590,20 @@ The backend enforces strict validation on file attachments before sending to AI 
 
 **Image Limits**:
 
-| Rule | Limit | Error |
-|------|-------|-------|
-| Max images per request | 5 | HTTP 400 |
-| Max size per image | 5 MB (decoded) | HTTP 400 |
-| Allowed MIME types | `image/png`, `image/jpeg`, `image/gif`, `image/webp` | HTTP 400 |
+| Rule                   | Limit                                                        | Error    |
+| ---------------------- | ------------------------------------------------------------ | -------- |
+| Max images per request | 5                                                            | HTTP 400 |
+| Max size per image     | 5 MB (decoded)                                               | HTTP 400 |
+| Allowed MIME types     | `image/png`, `image/jpeg`, `image/gif`, `image/webp` | HTTP 400 |
 
 **Document Limits**:
 
-| Rule | Limit | Error |
-|------|-------|-------|
-| Max files per request | 10 | HTTP 400 |
-| Max size per file | 20 MB (decoded) | HTTP 400 |
-| Allowed types | PDF, plain text, markdown, CSV, JSON, HTML, XML | HTTP 400 |
-| Unsupported | DOCX, PPTX, XLSX (Office documents) | HTTP 400 |
+| Rule                  | Limit                                           | Error    |
+| --------------------- | ----------------------------------------------- | -------- |
+| Max files per request | 10                                              | HTTP 400 |
+| Max size per file     | 20 MB (decoded)                                 | HTTP 400 |
+| Allowed types         | PDF, plain text, markdown, CSV, JSON, HTML, XML | HTTP 400 |
+| Unsupported           | DOCX, PPTX, XLSX (Office documents)             | HTTP 400 |
 
 Validation occurs in `BuildUserMessage()` before constructing the AI Foundry message payload.
 
@@ -618,12 +620,12 @@ All API errors use standardized Problem Details format:
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `title` | string | Human-readable error summary |
-| `status` | int | HTTP status code |
-| `detail` | string | Specific error description |
-| `traceId` | string? | Request correlation ID |
+| Field          | Type    | Description                                 |
+| -------------- | ------- | ------------------------------------------- |
+| `title`      | string  | Human-readable error summary                |
+| `status`     | int     | HTTP status code                            |
+| `detail`     | string  | Specific error description                  |
+| `traceId`    | string? | Request correlation ID                      |
 | `stackTrace` | string? | Exception stack (dev only, omitted in prod) |
 
 ### 5.3 Async Patterns
@@ -631,12 +633,14 @@ All API errors use standardized Problem Details format:
 The backend follows strict async/await conventions:
 
 **✅ Do**:
+
 - Use `async`/`await` with `CancellationToken` on all I/O
 - Pass `CancellationToken` through the entire call chain
 - Use `IAsyncEnumerable<T>` for streaming responses
 - Include `[EnumeratorCancellation]` attribute on streaming parameters
 
 **❌ Don't**:
+
 - Call `.Result` or `.Wait()` on async methods (causes deadlocks)
 - Ignore `CancellationToken` parameters
 - Use synchronous I/O in async contexts
@@ -644,17 +648,17 @@ The backend follows strict async/await conventions:
 
 ### 5.4 Configuration Keys
 
-| Key | Source | Purpose | Example |
-|-----|--------|---------|---------|
-| `AzureAd:ClientId` | .env | Entra app client ID | `abc123-...` |
-| `AzureAd:TenantId` | .env | Entra tenant ID | `def456-...` |
-| `AI_AGENT_ENDPOINT` | .env | AI Foundry project URL | `https://....api.azureml.ms` |
-| `AI_AGENT_ID` | .env | Agent name (v2 API) | `my-agent` |
-| `ASPNETCORE_ENVIRONMENT` | Environment | Development/Production | `Development` |
-| `ENTRA_BACKEND_CLIENT_ID` | Container App env | Backend app ID for OBO | `59bc6af3-...` |
-| `MANAGED_IDENTITY_CLIENT_ID` | Container App env | User-assigned MI client ID for OBO (`OBO_MANAGED_IDENTITY_CLIENT_ID` is a deprecated alias) | `abc123-...` |
-| `APPLICATIONINSIGHTS_CONNECTION_STRING` | Container App env | Azure Monitor OpenTelemetry export (backend traces/metrics) | `InstrumentationKey=...` |
-| `APPLICATIONINSIGHTS_FRONTEND_CONNECTION_STRING` | Docker build arg | Frontend browser telemetry (injected at build as `VITE_APPLICATIONINSIGHTS_CONNECTION_STRING`) | `InstrumentationKey=...` |
+| Key                                                | Source            | Purpose                                                                                         | Example                        |
+| -------------------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------- | ------------------------------ |
+| `AzureAd:ClientId`                               | .env              | Entra app client ID                                                                             | `abc123-...`                 |
+| `AzureAd:TenantId`                               | .env              | Entra tenant ID                                                                                 | `def456-...`                 |
+| `AI_AGENT_ENDPOINT`                              | .env              | AI Foundry project URL                                                                          | `https://....api.azureml.ms` |
+| `AI_AGENT_ID`                                    | .env              | Agent name (v2 API)                                                                             | `my-agent`                   |
+| `ASPNETCORE_ENVIRONMENT`                         | Environment       | Development/Production                                                                          | `Development`                |
+| `ENTRA_BACKEND_CLIENT_ID`                        | Container App env | Backend app ID for OBO                                                                          | `59bc6af3-...`               |
+| `MANAGED_IDENTITY_CLIENT_ID`                     | Container App env | User-assigned MI client ID for OBO (`OBO_MANAGED_IDENTITY_CLIENT_ID` is a deprecated alias)   | `abc123-...`                 |
+| `APPLICATIONINSIGHTS_CONNECTION_STRING`          | Container App env | Azure Monitor OpenTelemetry export (backend traces/metrics)                                     | `InstrumentationKey=...`     |
+| `APPLICATIONINSIGHTS_FRONTEND_CONNECTION_STRING` | Docker build arg  | Frontend browser telemetry (injected at build as`VITE_APPLICATIONINSIGHTS_CONNECTION_STRING`) | `InstrumentationKey=...`     |
 
 The `.env` file is auto-generated by `postprovision.ps1` during `azd up` (after Bicep provisions the Entra app and infrastructure).
 
@@ -664,18 +668,18 @@ The `.env` file is auto-generated by `postprovision.ps1` during `azd up` (after 
 
 ### Backend
 
-| File | Purpose |
-|------|---------|
-| [backend/WebApp.Api/Program.cs](backend/WebApp.Api/Program.cs) | Request pipeline, JWT validation, SSE endpoints |
+| File                                                                                                        | Purpose                                         |
+| ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| [backend/WebApp.Api/Program.cs](backend/WebApp.Api/Program.cs)                                               | Request pipeline, JWT validation, SSE endpoints |
 | [backend/WebApp.Api/Services/AgentFrameworkService.cs](backend/WebApp.Api/Services/AgentFrameworkService.cs) | Agent loading, streaming, credential management |
-| [backend/WebApp.Api/Models/StreamChunk.cs](backend/WebApp.Api/Models/StreamChunk.cs) | SSE chunk types (text, annotations, MCP) |
-| [backend/WebApp.Api/Models/ChatRequest.cs](backend/WebApp.Api/Models/ChatRequest.cs) | Request payload with attachments |
+| [backend/WebApp.Api/Models/StreamChunk.cs](backend/WebApp.Api/Models/StreamChunk.cs)                         | SSE chunk types (text, annotations, MCP)        |
+| [backend/WebApp.Api/Models/ChatRequest.cs](backend/WebApp.Api/Models/ChatRequest.cs)                         | Request payload with attachments                |
 
 ### Frontend
 
-| File | Purpose |
-|------|---------|
-| [frontend/src/types/appState.ts](frontend/src/types/appState.ts) | State & action type definitions |
-| [frontend/src/reducers/appReducer.ts](frontend/src/reducers/appReducer.ts) | Pure reducer with all transitions |
-| [frontend/src/contexts/AppContext.tsx](frontend/src/contexts/AppContext.tsx) | Provider with MSAL integration |
-| [frontend/src/services/chatService.ts](frontend/src/services/chatService.ts) | SSE client dispatching actions |
+| File                                                                        | Purpose                           |
+| --------------------------------------------------------------------------- | --------------------------------- |
+| [frontend/src/types/appState.ts](frontend/src/types/appState.ts)             | State & action type definitions   |
+| [frontend/src/reducers/appReducer.ts](frontend/src/reducers/appReducer.ts)   | Pure reducer with all transitions |
+| [frontend/src/contexts/AppContext.tsx](frontend/src/contexts/AppContext.tsx) | Provider with MSAL integration    |
+| [frontend/src/services/chatService.ts](frontend/src/services/chatService.ts) | SSE client dispatching actions    |

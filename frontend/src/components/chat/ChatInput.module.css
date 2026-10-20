@@ -21,7 +21,7 @@
 
 .inputWrapper:focus-within {
   border-color: var(--colorBrandStroke1);
-  box-shadow: var(--shadow8);
+  box-shadow: 0 0 0 1px var(--colorBrandStroke1);
 }
 
 .inputWrapper :global(.fui-ChatInput) {
@@ -41,20 +41,20 @@
   background: transparent;
 }
 
-/* Style the built-in send button to match our subtle buttons */
+/* Built-in send button: subtle, in RAKTA blue when it can be used */
 .inputWrapper :global(.fui-ChatInput) :global(button) {
-  color: var(--colorNeutralForeground2);
+  color: var(--colorBrandForeground1);
   background: transparent !important;
   border: none;
 }
 
 .inputWrapper :global(.fui-ChatInput) :global(button:hover:enabled) {
-  color: var(--colorNeutralForeground2Hover);
+  color: var(--colorBrandForeground2);
   background: var(--colorSubtleBackgroundHover) !important;
 }
 
 .inputWrapper :global(.fui-ChatInput) :global(button:active:enabled) {
-  color: var(--colorNeutralForeground2Pressed);
+  color: var(--colorBrandForeground2);
   background: var(--colorSubtleBackgroundPressed) !important;
 }
 

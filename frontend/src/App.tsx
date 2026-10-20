@@ -8,7 +8,10 @@ import { loginRequest } from "./config/authConfig";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "./hooks/useAuth";
 import type { IAgentMetadata } from "./types/chat";
+import raktaLogo from "./assets/rakta-logo.png";
 import "./App.css";
+
+const FALLBACK_AGENT_NAME = 'RAKTA Assistant';
 
 function App() {
   // This hook handles authentication automatically - redirects if not authenticated
@@ -37,11 +40,11 @@ function App() {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data: IAgentMetadata = await response.json();
       setAgentMetadata(data);
-      
-      // Update document title with agent name
-      document.title = data.name ? `${data.name} - Azure AI Agent` : 'Azure AI Agent';
+
+      const shownName = data.displayName || data.name;
+      document.title = shownName ? `${shownName} | RAKTA` : FALLBACK_AGENT_NAME;
     } catch (error) {
       console.error('Error fetching agent metadata:', error);
       // Fallback data keeps UI functional on error
@@ -49,12 +52,12 @@ function App() {
         id: 'fallback-agent',
         object: 'agent',
         createdAt: Date.now() / 1000,
-        name: 'Azure AI Agent',
-        description: 'Your intelligent conversational partner powered by Azure AI',
+        name: FALLBACK_AGENT_NAME,
+        description: null,
         model: 'gpt-4o-mini',
-        metadata: { logo: 'Avatar_Default.svg' }
+        metadata: null
       });
-      document.title = 'Azure AI Agent';
+      document.title = FALLBACK_AGENT_NAME;
     } finally {
       setIsLoadingAgent(false);
     }
@@ -67,18 +70,12 @@ function App() {
   return (
     <ErrorBoundary>
       {auth.status === 'initializing' || isLoadingAgent ? (
-        <div className="app-container" style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height: '100vh', 
-          flexDirection: 'column', 
-          gap: '1rem' 
-        }}>
-          <Spinner size="large" />
-          <p style={{ margin: 0 }}>
-            {auth.status === 'initializing' ? 'Preparing your session...' : 'Loading agent...'}
-          </p>
+        <div className="app-container app-loading">
+          <img src={raktaLogo} alt="RAK Transport Authority" className="app-loading-logo" />
+          <Spinner
+            size="small"
+            label={auth.status === 'initializing' ? 'Preparing your session…' : 'Loading assistant…'}
+          />
         </div>
       ) : (
         <>
@@ -87,7 +84,7 @@ function App() {
               <div className="app-container">
                 <AgentChat 
                   agentId={agentMetadata.id}
-                  agentName={agentMetadata.name}
+                  agentName={agentMetadata.displayName || agentMetadata.name}
                   agentDescription={agentMetadata.description || undefined}
                   agentLogo={agentMetadata.metadata?.logo}
                   starterPrompts={agentMetadata.starterPrompts || undefined}
@@ -96,13 +93,9 @@ function App() {
             )}
           </AuthenticatedTemplate>
           <UnauthenticatedTemplate>
-            <div className="app-container" style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              height: '100vh'
-            }}>
-              <p>Signing in...</p>
+            <div className="app-container app-loading">
+              <img src={raktaLogo} alt="RAK Transport Authority" className="app-loading-logo" />
+              <Spinner size="small" label="Signing in…" />
             </div>
           </UnauthenticatedTemplate>
         </>

@@ -16,10 +16,11 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 2rem 1.5rem;
-  background-color: var(--colorNeutralBackground1);
+  background-color: var(--rakta-canvas);
   position: relative;
   min-height: 0;
   width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -29,6 +30,7 @@
 .messagesWrapper {
   width: 100%;
   max-width: 900px;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
 }
@@ -91,10 +93,11 @@
   position: relative;
   flex-shrink: 0;
   width: 100%;
-  background: var(--colorNeutralBackground1);
+  background: var(--rakta-canvas);
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-bottom: 0.5rem;
 }
 
 /* Error message wrapper - matches chat input width exactly */
@@ -127,11 +130,6 @@
 .newMessagesPill:hover {
   background-color: var(--colorNeutralBackground1Hover);
   box-shadow: var(--shadow16);
-}
-
-/* Built with badge - centered under input */
-.builtWithBadge {
-  padding-bottom: 0.5rem;
 }
 
 .editBanner {

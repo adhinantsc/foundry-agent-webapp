@@ -108,6 +108,8 @@ export const useThemeProvider = (): ThemeContextValue => {
     // Update document color scheme for browser UI
     if (typeof document !== 'undefined') {
       document.documentElement.style.colorScheme = isDarkMode ? 'dark' : 'light';
+      // Drives the --rakta-* CSS tokens in index.css
+      document.documentElement.dataset.theme = isDarkMode ? 'dark' : 'light';
     }
   }, [isDarkMode]);
 

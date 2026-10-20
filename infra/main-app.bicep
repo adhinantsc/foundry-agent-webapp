@@ -5,6 +5,7 @@ param containerAppsEnvironmentId string
 param containerRegistryName string
 param aiAgentEndpoint string
 param aiAgentId string
+param aiAgentDisplayName string = ''
 param entraSpaClientId string
 param entraTenantId string
 param entraBackendClientId string = ''
@@ -68,7 +69,15 @@ var oboEnv = !empty(entraBackendClientId) ? [
   }
 ] : []
 
-var containerEnv = concat(baseEnv, miEnv, oboEnv)
+// Friendly agent name for the UI, only injected when configured
+var displayNameEnv = !empty(aiAgentDisplayName) ? [
+  {
+    name: 'AI_AGENT_DISPLAY_NAME'
+    value: aiAgentDisplayName
+  }
+] : []
+
+var containerEnv = concat(baseEnv, miEnv, oboEnv, displayNameEnv)
 
 // Single Container App - serves both frontend and backend
 module webApp './core/host/container-app.bicep' = {

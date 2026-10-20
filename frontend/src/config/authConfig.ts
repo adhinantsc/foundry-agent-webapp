@@ -59,12 +59,15 @@ export const msalConfig: Configuration = {
   },
 };
 
+// Scope name exposed by the Entra app; override with VITE_ENTRA_SCOPE_NAME when the app uses a different name
+const scopeName = import.meta.env.VITE_ENTRA_SCOPE_NAME || "Chat.ReadWrite";
+
 // API permission scope (will match app registration in Step 08)
 export const loginRequest = {
-  scopes: [`api://${scopeClientId}/Chat.ReadWrite`],
+  scopes: [`api://${scopeClientId}/${scopeName}`],
 };
 
 export const tokenRequest = {
-  scopes: [`api://${scopeClientId}/Chat.ReadWrite`],
+  scopes: [`api://${scopeClientId}/${scopeName}`],
   forceRefresh: false, // Use cached token if valid
 };

@@ -65,6 +65,8 @@ export interface IAgentMetadata {
   object: string;
   createdAt: number;
   name: string;
+  /** Friendly name from the backend's AI_AGENT_DISPLAY_NAME setting; shown instead of `name` when set. */
+  displayName?: string | null;
   description?: string | null;
   model: string;
   instructions?: string | null;

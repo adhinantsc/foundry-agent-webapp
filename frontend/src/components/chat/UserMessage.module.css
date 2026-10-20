@@ -3,18 +3,28 @@
   padding-top: 0;
   padding-bottom: 0;
   gap: 2px;
-  animation: fadeIn 0.3s ease-in;
+  background-color: transparent;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* RAKTA Blue bubble: blue means "you" across the app */
+.userMessage :global(.fai-UserMessage__message) {
+  background-color: var(--colorBrandBackground);
+  color: var(--colorNeutralForegroundOnBrand);
+  border-radius: 12px 12px 4px 12px;
+}
+
+/* Markdown sets its own text colour; inherit the bubble's white instead (code blocks keep theirs) */
+.userMessage :global(.fai-UserMessage__message) :where(*:not(pre, pre *)) {
+  color: inherit;
+}
+
+.userMessage :global(.fai-UserMessage__message) a {
+  text-decoration: underline;
+}
+
+.userMessage :global(.fai-UserMessage__message) code {
+  background-color: rgba(255, 255, 255, 0.16);
+  color: inherit;
 }
 
 .attachments {

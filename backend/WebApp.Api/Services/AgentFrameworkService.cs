@@ -35,6 +35,10 @@ public class AgentFrameworkService : IDisposable
     /// versions, so pinning is useful for reproducibility across deployments.
     /// </summary>
     private readonly string? _configuredAgentVersion;
+    /// <summary>
+    /// Optional friendly name for the UI from <c>AI_AGENT_DISPLAY_NAME</c> (e.g. "Finance Assistant").
+    /// </summary>
+    private readonly string? _agentDisplayName;
     private readonly ILogger<AgentFrameworkService> _logger;
     private readonly IHttpContextAccessor? _httpContextAccessor;
     private readonly string? _backendClientId;
@@ -82,6 +86,10 @@ public class AgentFrameworkService : IDisposable
         _configuredAgentVersion = string.IsNullOrWhiteSpace(configuration["AI_AGENT_VERSION"])
             ? null
             : configuration["AI_AGENT_VERSION"];
+
+        _agentDisplayName = string.IsNullOrWhiteSpace(configuration["AI_AGENT_DISPLAY_NAME"])
+            ? null
+            : configuration["AI_AGENT_DISPLAY_NAME"]!.Trim();
 
         _logger.LogDebug(
             "Initializing AgentFrameworkService: endpoint={Endpoint}, agentId={AgentId}, version={Version}", 
@@ -1067,6 +1075,7 @@ public class AgentFrameworkService : IDisposable
             Object = "agent",
             CreatedAt = agentVersion.CreatedAt.ToUnixTimeSeconds(),
             Name = agentVersion.Name ?? "AI Assistant",
+            DisplayName = _agentDisplayName,
             Description = agentVersion.Description,
             Model = definition?.Model ?? string.Empty,
             Instructions = definition?.Instructions ?? string.Empty,

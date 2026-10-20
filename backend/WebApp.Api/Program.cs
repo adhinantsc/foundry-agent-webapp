@@ -93,7 +93,8 @@ if (!string.IsNullOrEmpty(tenantId))
     builder.Configuration["AzureAd:TenantId"] = tenantId;
 }
 
-const string RequiredScope = "Chat.ReadWrite";
+// Scope name exposed by the Entra app; override with ENTRA_SCOPE_NAME when the app uses a different name
+var RequiredScope = builder.Configuration["ENTRA_SCOPE_NAME"] is { Length: > 0 } scopeName ? scopeName : "Chat.ReadWrite";
 const string ScopePolicyName = "RequireChatScope";
 
 // Add Microsoft Identity Web authentication

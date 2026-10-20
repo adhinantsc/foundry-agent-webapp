@@ -2,6 +2,40 @@
 
 AI-powered web application with Entra ID authentication and Foundry Agent Service integration. Deploy to Azure Container Apps with a single command.
 
+Both servers are already running, so you can open **http://localhost:5173** and sign in.
+
+- **Backend:** running on port 8080. It's the copy I restarted from my session.
+- **Frontend:** running on port 5173.
+
+Nothing has changed visually yet, because I haven't built the RAKTA design. That's waiting on your approval of the plan.
+
+**Starting it yourself later**
+
+Use two terminals from the repo root:
+
+```powershell
+# Terminal 1 – backend
+cd backend\WebApp.Api
+dotnet run --launch-profile http
+```
+
+```powershell
+# Terminal 2 – frontend
+cd frontend
+npm install        # only the first time, or after package changes
+npm run dev
+```
+
+Or start both with one command:
+
+```powershell
+.\deployment\scripts\start-local-dev.ps1
+```
+
+This script stops whatever is already using ports 8080 and 5173, including the backend I started, and opens both servers in new windows. You can also use the VS Code task **"Start Dev (VS Code Terminals)"** (Ctrl+Shift+B).
+
+If by "this" you meant the design plan, say "approved" and I'll build it.
+
 > **⚠️ Coming from the AI Foundry portal?** The portal's "View sample app code" gives you AI resource variables, but this app also needs an **Entra ID app registration** for authentication — which is created by `azd up`. Even if your AI Foundry resources already exist, you must run `azd up` before the app will work. See the [Foundry portal setup](#coming-from-the-ai-foundry-portal) section below.
 
 ## Quick Start
@@ -17,6 +51,7 @@ azd up  # Full deployment: ~10-12 minutes
 ```
 
 **Alternative**: Use GitHub's "Use this template" button or clone directly:
+
 ```powershell
 git clone https://github.com/microsoft-foundry/foundry-agent-webapp.git
 cd foundry-agent-webapp
@@ -24,13 +59,14 @@ azd up
 ```
 
 The `azd up` command:
+
 1. Discovers AI Foundry resources in your subscription
 2. Creates Microsoft Entra ID app registration (via Bicep) and Azure infrastructure (ACR, Container Apps)
 3. Builds and deploys your application
 4. Opens browser to your deployed app
 
-**Local Development**: http://localhost:5173 (frontend), http://localhost:8080 (backend)  
-**Production**: https://<your-app>.azurecontainerapps.io
+**Local Development**: http://localhost:5173 (frontend), http://localhost:8080 (backend)
+**Production**: https://<your-app></your>.azurecontainerapps.io
 
 ### GitHub Codespaces
 
@@ -41,6 +77,7 @@ This repo includes a devcontainer configuration for Codespaces. The `azd` CLI, .
 ## Prerequisites
 
 ### Windows
+
 - **PowerShell 7+** - `winget install Microsoft.PowerShell`
 - **Azure Developer CLI (azd)** - `winget install microsoft.azd`
 - **Azure CLI** - `winget install Microsoft.AzureCLI`
@@ -49,6 +86,7 @@ This repo includes a devcontainer configuration for Codespaces. The `azd` CLI, .
 - **Node.js 18+** - https://nodejs.org
 
 ### macOS
+
 - **PowerShell 7+** - `brew install powershell` or [download](https://github.com/PowerShell/PowerShell/releases)
 - **Azure Developer CLI (azd)** - `brew tap azure/azd && brew install azd` or `curl -fsSL https://aka.ms/install-azd.sh | bash`
 - **Azure CLI** - `brew install azure-cli` or `curl -L https://aka.ms/InstallAzureCli | bash`
@@ -59,6 +97,7 @@ This repo includes a devcontainer configuration for Codespaces. The `azd` CLI, .
 > **Homebrew not installed?** Commands work without Homebrew using direct installers. The deployment script (`azd up`) checks for Homebrew and provides appropriate installation instructions.
 
 ### Linux
+
 - **PowerShell 7+** - https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-linux
 - **Azure Developer CLI (azd)** - `curl -fsSL https://aka.ms/install-azd.sh | bash`
 - **Azure CLI** - https://learn.microsoft.com/cli/azure/install-azure-cli-linux
@@ -67,6 +106,7 @@ This repo includes a devcontainer configuration for Codespaces. The `azd` CLI, .
 - **Node.js 18+** - https://nodejs.org
 
 ### Azure Requirements
+
 - **Azure Subscription** with Contributor role
 - **Bicep CLI** - Installed automatically with `azd`, or manually: `az bicep install`
 - **Microsoft Foundry Resource** with a project and at least one v2 agent — create via [ai.azure.com](https://ai.azure.com) or deploy infrastructure with [microsoft-foundry/foundry-samples](https://github.com/microsoft-foundry/foundry-samples/tree/main/infrastructure/infrastructure-setup-bicep) Bicep templates
@@ -100,35 +140,38 @@ The workspace includes optimized VS Code configuration for AI-assisted developme
 
 ### Tasks (`.vscode/tasks.json`)
 
-| Task | Description | Port |
-|------|-------------|------|
-| `Backend: ASP.NET Core API` | `dotnet watch run` with hot reload | 8080 |
-| `Frontend: React Vite` | `npm run dev` with HMR (auto-installs deps) | 5173 |
-| `Start Dev (VS Code Terminals)` | Starts both in parallel (default build task) | - |
-| `Validate Configuration` | Checks `.env` files for required variables | - |
-| `Install Frontend Dependencies` | `npm install --legacy-peer-deps` (runs automatically) | - |
+| Task                              | Description                                             | Port |
+| --------------------------------- | ------------------------------------------------------- | ---- |
+| `Backend: ASP.NET Core API`     | `dotnet watch run` with hot reload                    | 8080 |
+| `Frontend: React Vite`          | `npm run dev` with HMR (auto-installs deps)           | 5173 |
+| `Start Dev (VS Code Terminals)` | Starts both in parallel (default build task)            | -    |
+| `Validate Configuration`        | Checks`.env` files for required variables             | -    |
+| `Install Frontend Dependencies` | `npm install --legacy-peer-deps` (runs automatically) | -    |
 
 **Hot Reload Workflow**:
+
 - **Backend**: Edit C# → Save → .NET auto-recompiles → Check terminal for errors
 - **Frontend**: Edit TypeScript/React → Save → Browser updates instantly (HMR)
 - **No restarts needed** - just edit, save, and test
 
 **AI Agent Benefits**: Server logs are visible in VS Code terminals, allowing AI agents to:
+
 - See compilation errors and warnings
 - Monitor request handling
 - Debug issues without screenshots
 
 ### Debugging (`.vscode/launch.json`)
 
-| Configuration | Description |
-|---------------|-------------|
-| `.NET: Launch Backend` | Debug ASP.NET Core API with C# Dev Kit |
-| `.NET: Attach to Backend` | Attach to running dotnet watch process |
-| `Chrome: Frontend` | Debug React app in Chrome with source maps |
-| `Edge: Frontend` | Debug React app in Edge |
-| `Full Stack Debug` | Launch backend + Chrome together |
+| Configuration               | Description                                |
+| --------------------------- | ------------------------------------------ |
+| `.NET: Launch Backend`    | Debug ASP.NET Core API with C# Dev Kit     |
+| `.NET: Attach to Backend` | Attach to running dotnet watch process     |
+| `Chrome: Frontend`        | Debug React app in Chrome with source maps |
+| `Edge: Frontend`          | Debug React app in Edge                    |
+| `Full Stack Debug`        | Launch backend + Chrome together           |
 
 ### Settings (`.vscode/settings.json`)
+
 - **GitHub Copilot** - Code generation uses instruction files (`github.copilot.chat.codeGeneration.useInstructionFiles: true`)
 - **Agent Customization** - Agent customization skill enabled (`chat.agentCustomizationSkill.enabled: true`)
 - **Skills** - On-demand loading from `.github/skills/` for efficient context
@@ -167,9 +210,11 @@ azd env set AZURE_EXISTING_AIPROJECT_ENDPOINT "https://your-resource.services.ai
 azd env set AZURE_EXISTING_RESOURCE_ID "/subscriptions/.../accounts/your-resource"
 azd up
 ```
+
 The preprovision hook detects these portal variables (from either location) and maps them automatically.
 
 **Change AI Foundry resource**:
+
 ```powershell
 # Option 1: Let azd discover and prompt for selection
 azd provision  # Re-runs discovery, updates RBAC
@@ -181,6 +226,7 @@ azd provision  # Updates RBAC for new resource
 ```
 
 **List and switch agents** (requires prior `azd up`):
+
 ```powershell
 # List all agents in configured project
 .\deployment\scripts\list-agents.ps1
@@ -216,6 +262,7 @@ See [`frontend/README.md`](frontend/README.md) for the full feature list.
 ## Development Workflow
 
 ### Option 1: VS Code Tasks (Recommended for AI-assisted development)
+
 ```powershell
 # Run the compound task via Command Palette (Ctrl+Shift+P):
 # "Tasks: Run Task" → "Start Dev (VS Code Terminals)"
@@ -226,17 +273,20 @@ See [`frontend/README.md`](frontend/README.md) for the full feature list.
 ```
 
 ### Option 2: PowerShell Script
+
 ```powershell
 # Start local development (spawns separate terminal windows)
 .\deployment\scripts\start-local-dev.ps1
 ```
 
 ### Hot Reload
+
 - **React**: Hot Module Replacement (HMR) - instant browser updates
 - **C#**: Watch mode - auto-recompiles on save, check terminal for errors
 - **Test at**: http://localhost:5173
 
 ### Deploy
+
 ```powershell
 # Deploy code changes to Azure
 azd deploy  # 3-5 minutes
@@ -246,22 +296,22 @@ azd deploy  # 3-5 minutes
 
 Multiple layers catch incomplete setup before cryptic errors appear:
 
-| Layer | What It Checks | When It Runs |
-|-------|---------------|--------------|
-| **Vite env check plugin** | `VITE_ENTRA_SPA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID` | Dev server startup (`npm run dev`) — serves a styled error page instead of the app |
-| **preToolUse hook** | Context-aware: frontend commands check frontend env, backend commands check backend env (including `AI_AGENT_ENDPOINT`, `AI_AGENT_ID`) | AI agents running dev commands — advisory message, non-blocking |
-| **Validate Configuration task** | Both `.env` files with auth variables | On-demand via VS Code (`Tasks: Run Task` → `Validate Configuration`) |
-| **`validating-local-setup` skill** | Full diagnostic checklist with error patterns and step-by-step fixes | Loaded by AI agents when setup issues are detected |
+| Layer                                      | What It Checks                                                                                                                            | When It Runs                                                                          |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **Vite env check plugin**            | `VITE_ENTRA_SPA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID`                                                                                    | Dev server startup (`npm run dev`) — serves a styled error page instead of the app |
+| **preToolUse hook**                  | Context-aware: frontend commands check frontend env, backend commands check backend env (including`AI_AGENT_ENDPOINT`, `AI_AGENT_ID`) | AI agents running dev commands — advisory message, non-blocking                      |
+| **Validate Configuration task**      | Both`.env` files with auth variables                                                                                                    | On-demand via VS Code (`Tasks: Run Task` → `Validate Configuration`)             |
+| **`validating-local-setup` skill** | Full diagnostic checklist with error patterns and step-by-step fixes                                                                      | Loaded by AI agents when setup issues are detected                                    |
 
 All layers point to the same fix: run `azd up` from the repo root.
 
 ## Architecture
 
-**Frontend**: React 19 + TypeScript + Vite  
-**Backend**: ASP.NET Core 9 Minimal APIs  
-**Authentication**: Microsoft Entra ID (PKCE flow)  
-**AI Integration**: Foundry Agent Service v2 Agents API (`Azure.AI.Projects` SDK)  
-**Deployment**: Single container, Azure Container Apps  
+**Frontend**: React 19 + TypeScript + Vite
+**Backend**: ASP.NET Core 9 Minimal APIs
+**Authentication**: Microsoft Entra ID (PKCE flow)
+**AI Integration**: Foundry Agent Service v2 Agents API (`Azure.AI.Projects` SDK)
+**Deployment**: Single container, Azure Container Apps
 **Local Dev**: Native (no Docker required)
 
 ### Known Limitations
@@ -270,23 +320,23 @@ All layers point to the same fix: run `azd up` from the repo root.
 - **GA Azure SDK**: This application uses GA `Azure.AI.Projects` and `Azure.AI.Extensions.OpenAI` packages. Check `backend/WebApp.Api/WebApp.Api.csproj` for current versions.
 - **npm Peer Dependencies**: React 19 has peer dependency conflicts with some packages. If adding packages that have peer dependencies (like `yjs` for `@lexical/yjs`), you must add them explicitly to `package.json`. Run `npm ci` locally to verify before committing.
 
-
 ## Commands
 
 **See `.github/copilot-instructions.md` for complete command reference and development workflow.**
 
-| Command | Purpose | Duration |
-|---------|---------|----------|
-| `azd up` | Initial deployment (infra + code) | 10-12 min |
-| `azd deploy` | Deploy code changes only | 3-5 min |
-| `.\deployment\scripts\start-local-dev.ps1` | Start local development | Instant |
-| `.\deployment\scripts\list-agents.ps1` | List agents in your project | Instant |
-| `azd provision` | Re-deploy infrastructure / update RBAC | 2-3 min |
-| `azd down --force --purge` | Delete all Azure resources | 2-3 min |
+| Command                                      | Purpose                                | Duration  |
+| -------------------------------------------- | -------------------------------------- | --------- |
+| `azd up`                                   | Initial deployment (infra + code)      | 10-12 min |
+| `azd deploy`                               | Deploy code changes only               | 3-5 min   |
+| `.\deployment\scripts\start-local-dev.ps1` | Start local development                | Instant   |
+| `.\deployment\scripts\list-agents.ps1`     | List agents in your project            | Instant   |
+| `azd provision`                            | Re-deploy infrastructure / update RBAC | 2-3 min   |
+| `azd down --force --purge`                 | Delete all Azure resources             | 2-3 min   |
 
 ## Documentation
 
 ### For Developers
+
 - `ARCHITECTURE-FLOW.md` - State machines, data flow diagrams, and SSE event mapping
 - `backend/README.md` - ASP.NET Core API setup and configuration
 - `frontend/README.md` - React frontend development
@@ -294,6 +344,7 @@ All layers point to the same fix: run `azd up` from the repo root.
 - `deployment/README.md` - Deployment scripts and hooks
 
 ### For AI Assistants (GitHub Copilot)
+
 This repository uses VS Code's Agent Skills feature for on-demand context loading:
 
 - `.github/copilot-instructions.md` - Architecture overview (always loaded)
@@ -340,10 +391,10 @@ All resources deploy to the same region (`AZURE_LOCATION`). The managed identity
 
 By default, `azd up` configures everything automatically:
 
-| Component | Identity | How |
-|-----------|----------|-----|
-| Frontend → Backend | User's Entra ID token (MSAL.js PKCE) | SPA app registration created by Bicep |
-| Backend → Agent Service | Container App's managed identity | User-assigned MI + RBAC (see [Azure Resources](#azure-resources-provisioned)) |
+| Component                | Identity                             | How                                                                         |
+| ------------------------ | ------------------------------------ | --------------------------------------------------------------------------- |
+| Frontend → Backend      | User's Entra ID token (MSAL.js PKCE) | SPA app registration created by Bicep                                       |
+| Backend → Agent Service | Container App's managed identity     | User-assigned MI + RBAC (see[Azure Resources](#azure-resources-provisioned)) |
 
 The managed identity has `Cognitive Services OpenAI Contributor` + `Azure AI Developer` roles on the AI Foundry resource. All agent tool calls (MCP, OpenAPI, Logic Apps) use the **agent's own identity** configured in the Foundry portal — NOT the web app's identity and NOT the user's identity.
 
@@ -375,6 +426,7 @@ OBO replaces the managed identity with the **user's own identity** for Agent Ser
 ```
 
 **References**:
+
 - [OBO flow protocol](https://learn.microsoft.com/entra/identity-platform/v2-oauth2-on-behalf-of-flow)
 - [Federated Identity Credentials (FIC) with managed identities](https://learn.microsoft.com/entra/workload-id/workload-identity-federation-config-app-trust-managed-identity)
 - [ManagedIdentityClientAssertion](https://learn.microsoft.com/entra/msal/dotnet/acquiring-tokens/web-apps-apis/workload-identity-federation)
@@ -391,12 +443,12 @@ This creates a backend API app registration with FIC, sets `api://{backendClient
 
 #### RBAC & Consent Requirements
 
-| Requirement | Who | What | Why |
-|-------------|-----|------|-----|
-| **FIC creation** | Deployer | `Application Administrator` role in Entra ID | To create the federated identity credential on the backend app |
-| **Admin consent** | Entra admin | Grant **Azure Machine Learning Services / `user_impersonation`** delegated permission | The OBO token exchange requests `https://ai.azure.com/.default` which resolves to Azure Machine Learning Services (appId: `18a66f5f-dbdf-4c17-9dd7-1634712a9cbe`). Without admin consent, token acquisition fails with `AADSTS65001`. |
-| **User RBAC** | Each user | `Azure AI User` role on the Foundry resource | OBO tokens carry the user's identity; the user needs data-plane permissions ([docs](https://learn.microsoft.com/azure/ai-foundry/concepts/rbac-foundry)) |
-| **Known client** | Deployer (optional) | Add SPA client ID to backend app's `knownClientApplications` | Enables combined consent prompt so users consent to both SPA + backend in one step ([docs](https://learn.microsoft.com/entra/identity-platform/v2-oauth2-on-behalf-of-flow#default-and-combined-consent)) |
+| Requirement             | Who                 | What                                                                                         | Why                                                                                                                                                                                                                                        |
+| ----------------------- | ------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **FIC creation**  | Deployer            | `Application Administrator` role in Entra ID                                               | To create the federated identity credential on the backend app                                                                                                                                                                             |
+| **Admin consent** | Entra admin         | Grant**Azure Machine Learning Services / `user_impersonation`** delegated permission | The OBO token exchange requests`https://ai.azure.com/.default` which resolves to Azure Machine Learning Services (appId: `18a66f5f-dbdf-4c17-9dd7-1634712a9cbe`). Without admin consent, token acquisition fails with `AADSTS65001`. |
+| **User RBAC**     | Each user           | `Azure AI User` role on the Foundry resource                                               | OBO tokens carry the user's identity; the user needs data-plane permissions ([docs](https://learn.microsoft.com/azure/ai-foundry/concepts/rbac-foundry))                                                                                    |
+| **Known client**  | Deployer (optional) | Add SPA client ID to backend app's`knownClientApplications`                                | Enables combined consent prompt so users consent to both SPA + backend in one step ([docs](https://learn.microsoft.com/entra/identity-platform/v2-oauth2-on-behalf-of-flow#default-and-combined-consent))                                   |
 
 > **⚠️ Common mistake: consenting to the wrong service.** The Azure portal shows "Microsoft Cognitive Services" (`https://cognitiveservices.azure.com`, appId: `7d312290-...`) which looks like the right choice — but `AIProjectClient` actually requests tokens for `https://ai.azure.com/.default` which maps to **Azure Machine Learning Services** (appId: `18a66f5f-dbdf-4c17-9dd7-1634712a9cbe`). These are **different first-party service principals**. You must consent to the correct one:
 >
@@ -415,12 +467,12 @@ This creates a backend API app registration with FIC, sets `api://{backendClient
 
 #### OBO Gotchas
 
-| Gotcha | Detail |
-|--------|--------|
-| **Wrong consent target** | Portal shows "Microsoft Cognitive Services" (`cognitiveservices.azure.com`, appId `7d312290-...`) — this is NOT correct. `AIProjectClient` uses `ai.azure.com/.default` → **Azure Machine Learning Services** (appId `18a66f5f-...`). Consenting to wrong one gives green checkmark but runtime `AADSTS65001`. |
-| **Tool identity is separate** | OBO only affects the Agent Service API caller. Agent tools (MCP, OpenAPI, Logic Apps) use the agent's identity from Foundry portal. Configure [Agent Identity](https://learn.microsoft.com/azure/ai-foundry/agents/concepts/agent-identity) separately for per-user tool access. |
-| **Conversations not user-scoped in MI mode** | MI uses a shared identity — all users see all conversations. OBO provides per-user isolation. |
-| **Local dev uses CLI credentials** | OBO requires a managed identity for FIC. Locally, the app uses `az login` credentials regardless of `ENTRA_BACKEND_CLIENT_ID`. |
+| Gotcha                                             | Detail                                                                                                                                                                                                                                                                                                                             |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Wrong consent target**                     | Portal shows "Microsoft Cognitive Services" (`cognitiveservices.azure.com`, appId `7d312290-...`) — this is NOT correct. `AIProjectClient` uses `ai.azure.com/.default` → **Azure Machine Learning Services** (appId `18a66f5f-...`). Consenting to wrong one gives green checkmark but runtime `AADSTS65001`. |
+| **Tool identity is separate**                | OBO only affects the Agent Service API caller. Agent tools (MCP, OpenAPI, Logic Apps) use the agent's identity from Foundry portal. Configure[Agent Identity](https://learn.microsoft.com/azure/ai-foundry/agents/concepts/agent-identity) separately for per-user tool access.                                                     |
+| **Conversations not user-scoped in MI mode** | MI uses a shared identity — all users see all conversations. OBO provides per-user isolation.                                                                                                                                                                                                                                     |
+| **Local dev uses CLI credentials**           | OBO requires a managed identity for FIC. Locally, the app uses`az login` credentials regardless of `ENTRA_BACKEND_CLIENT_ID`.                                                                                                                                                                                                  |
 
 ## Project Structure
 

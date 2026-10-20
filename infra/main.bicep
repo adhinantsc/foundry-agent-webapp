@@ -16,6 +16,9 @@ param aiAgentEndpoint string = ''
 @description('AI Agent ID (configured via azd env set AI_AGENT_ID)')
 param aiAgentId string = ''
 
+@description('Optional friendly agent name shown in the UI (configured via azd env set AI_AGENT_DISPLAY_NAME)')
+param aiAgentDisplayName string = ''
+
 @description('Entra ID Tenant ID (set by azd hook or auto-detected)')
 param entraTenantId string = tenant().tenantId
 
@@ -81,6 +84,7 @@ module app 'main-app.bicep' = {
     containerRegistryName: infrastructure.outputs.containerRegistryName
     aiAgentEndpoint: aiAgentEndpoint
     aiAgentId: aiAgentId
+    aiAgentDisplayName: aiAgentDisplayName
     entraSpaClientId: entraApp.outputs.clientAppId
     entraTenantId: entraTenantId
     entraBackendClientId: enableObo ? entraApp.outputs.backendClientAppId : ''

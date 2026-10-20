@@ -1,123 +1,125 @@
+/* Welcome screen: left-aligned, reads top to bottom like a sign */
 .zeroprompt {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  align-items: center;
   justify-content: center;
+  gap: 2.5rem;
 
+  /* Shares its left edge with the input below; narrower for comfortable line length */
   width: 100%;
-  height: 100%;
-  margin-bottom: 16px;
+  max-width: 640px;
+  flex: 1;
+  padding: 1rem 0 2rem;
+  box-sizing: border-box;
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  align-items: center;
-
-  max-width: 800px;
-  padding: 0 16px;
-
-  text-align: center;
+  gap: 0.5rem;
 }
 
-.emptyStateAgentIcon {
-  width: 48px;
-  height: 48px;
+/* Shown on small screens only; the header carries the name on wider ones */
+.agentName {
+  display: none;
+  margin: 0;
+  color: var(--colorBrandForeground1);
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
-.welcome,
-.caption {
-  text-align: center;
+.welcome {
+  margin: 0;
+  color: var(--colorNeutralForeground1);
+  font-size: 1.9375rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
   text-wrap: balance;
 }
 
 .caption {
-  max-width: 600px;
+  margin: 0;
+  max-width: 60ch;
+  color: var(--colorNeutralForeground3);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
-/* Starter prompts list - card-style layout with responsive wrapping */
+.prompts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.promptsHeading {
+  margin: 0;
+  color: var(--colorNeutralForeground3);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
 .promptList {
   list-style: none;
-  padding: 0 1rem;
   margin: 0;
+  padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: center;
-  max-width: 900px;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-/* Card-style prompt buttons */
-.promptCard {
-  background: var(--colorNeutralBackground2);
-  border: 2px solid transparent;
-  border-radius: var(--borderRadiusMedium, 0.5rem);
-  padding: 1rem 1.25rem;
-  cursor: pointer;
-  min-height: 4.5rem;
-  max-width: 18rem;
+/* Each suggestion is a full-width row with a blue lane rule; gold marks hover and focus */
+.promptRow {
+  display: block;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-  font-family: inherit;
-}
-
-.promptCard:hover {
-  background: var(--colorNeutralBackground2Hover);
-  border-color: var(--colorBrandStroke1);
-}
-
-.promptCard:focus-visible {
-  outline: 2px solid var(--colorBrandStroke1);
-  outline-offset: 2px;
-}
-
-.promptText {
-  font-size: 0.9375rem;
-  line-height: 1.4;
-  word-break: break-word;
+  padding: 0.875rem 1rem 0.875rem 1.125rem;
+  border: 1px solid var(--colorNeutralStroke2);
+  border-left: 4px solid var(--colorBrandStroke1);
+  border-radius: 4px;
+  background: var(--colorNeutralBackground1);
   color: var(--colorNeutralForeground1);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-/* Responsive: Stack vertically and hide 3rd+ on mobile */
+.promptRow:hover {
+  border-left-color: var(--rakta-gold);
+  background: var(--colorNeutralBackground1Hover);
+}
+
+.promptRow:focus-visible {
+  outline: 2px solid var(--colorStrokeFocus2);
+  outline-offset: 2px;
+  border-left-color: var(--rakta-gold);
+}
+
 @media (max-width: 600px) {
-  .promptList {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 0 0.5rem;
+  .zeroprompt {
+    justify-content: flex-start;
+    gap: 2rem;
+    padding-top: 0.5rem;
   }
 
-  .promptCard {
-    max-width: 100%;
-    min-height: 3.5rem;
+  .agentName {
+    display: block;
   }
 
-  /* Hide 3rd and beyond on small screens */
+  .welcome {
+    font-size: 1.5625rem;
+  }
+
+  /* Keep the first three suggestions on small screens */
   .promptList li:nth-child(n+4) {
     display: none;
   }
 }
 
-/* Tablet: show all, horizontal wrap */
-@media (min-width: 601px) and (max-width: 900px) {
-  .promptCard {
-    max-width: 15rem;
-  }
-}
-
-/* Desktop: larger cards */
-@media (min-width: 901px) {
-  .promptCard {
-    min-height: 5rem;
-    padding: 1.25rem 1.5rem;
-  }
-
-  .promptText {
-    font-size: 1rem;
+@media (prefers-reduced-motion: reduce) {
+  .promptRow {
+    transition: none;
   }
 }

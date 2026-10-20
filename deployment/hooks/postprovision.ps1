@@ -177,6 +177,7 @@ if ($webIdentityPrincipalId -and $aiFoundryResourceGroup -and $aiFoundryResource
 $aiAgentEndpoint = azd env get-value AI_AGENT_ENDPOINT 2>$null
 $aiAgentId = azd env get-value AI_AGENT_ID 2>$null
 $aiAgentVersion = azd env get-value AI_AGENT_VERSION 2>$null
+$aiAgentDisplayName = azd env get-value AI_AGENT_DISPLAY_NAME 2>$null
 
 # Frontend .env.local
 $frontendEnv = @"
@@ -201,6 +202,9 @@ AI_AGENT_ID=$aiAgentId
 "@
 if ($aiAgentVersion) {
     $backendEnvContent += "`nAI_AGENT_VERSION=$aiAgentVersion"
+}
+if ($aiAgentDisplayName) {
+    $backendEnvContent += "`nAI_AGENT_DISPLAY_NAME=$aiAgentDisplayName"
 }
 $backendEnvContent | Out-File -FilePath "backend/WebApp.Api/.env" -Encoding utf8 -Force
 
